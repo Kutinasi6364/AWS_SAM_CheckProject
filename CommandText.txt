@@ -1,0 +1,61 @@
+# AWS SAM を使用して S3 PUT Event を検知して Lambda を実行する
+
+# サポートされている AWSサービス を確認
+> sam local generate-event
+Commands:
+    alexa-skills-kit
+    alexa-smart-home
+    |
+    s3
+
+# AWSサービスに対して生成できるイベントタイプ確認
+> sam local generate-event s3
+Commands:
+  batch-invocation  Generates an Amazon S3 Batch Operations Invocation Event
+  delete            Generates an Amazon S3 Delete Event
+  put               Generates an Amazon S3 Put Event
+
+> sam local generate-event s3 put | tee events/s3-local-event.json
+    - sam local generate-event s3 put: S3バケットへのputイベントにトリガーされるイベント作成
+    - tee events/s3-event.json: tee イベントを標準出力に出力 & event/s3-local-event.jsonに出力
+
+# サンプルイベントを変更する場合
+> sam local generate-event s3 put --help
+
+# 何か build コマンドが弾かれる -> 原因はDockerが稼働していない
+> sam build --use-container
+: python3.9 metadata: {}
+architecture: x86_64 functions: HelloWorldFunction
+
+Build Failed
+Error: Docker is unreachable. Docker needs to be running to build inside a container.
+
+# Docker Desktop を起動してから実行
+> sam build --use-container
+Build Succeeded
+
+# Lambdaを呼び出そうとしたがエラー -> s3-local-event.json が UTF-16 だったため utf-8 に変更
+> sam local invoke -e events/s3-local-event.json HelloWorldFunction
+Error: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+
+# 再度実行
+> sam local invoke -e events/s3-local-event.json HelloWorldFunction
+Invoking app.lambda_handler (python3.11)
+Local image was not found.
+Removing rapid images for repo public.ecr.aws/sam/emulation-python3.11
+Building image.........................................................................................................................................................................................
+Using local image: public.ecr.aws/lambda/python:3.11-rapid-x86_64.
+
+Mounting C:\~\Project\.aws-sam\build\HelloWorldFunction as /var/task:ro,delegated,     
+inside runtime container
+START RequestId: 9b97556a-10c2-4840-aac8-f50b5182fe4d Version: $LATEST
+filename=test/key
+bucketname=example-bucket
+END RequestId: cb70f32b-6d80-41de-9492-6515f3f4d843
+REPORT RequestId: cb70f32b-6d80-41de-9492-6515f3f4d843  Init Duration: 0.03 ms  Duration: 39.65 ms      Billed Duration: 40 ms  Memory Size: 128 MB  Max Memory Used: 128 MB
+
+# ビルド
+> sam build --use-container   
+
+# put イベントに対して Lambda HelloWorldFunctionを実行(HelloWorldFunctionはtemplate.yaml の Resources に定義されている)
+> sam local invoke -e events/s3-local-event.json HelloWorldFunction

@@ -1,0 +1,40 @@
+# S3にファイルがアップロードされたのを検知してLambdaからTextractを実行する
+AWSTemplateFormatVersion: '2010-09-09'  # テンプレートのバージョンを指定
+Transform: 'AWS::Serverless-2016-10-31'  # AWS SAM を使用するための変換ルール
+Description:  'S3 upload trigger for AWS Textract text extraction' # テンプレートの説明文を指定
+
+Resources:
+  MyBucket:
+    Type: 'AWS::S3::Bucket'  # S3 バケットのリソースタイプを指定
+    Properties:
+      BucketName: !Sub '${AWS::AccountId}-${AWS::Region}-input-bucket'  # バケット名を指定
+
+  S3EventProcessorFunction:
+    Type: 'AWS::Serverless::Function'  # サーバーレスの Lambda 関数を指定
+    Properties:
+      Handler: app.lambda_handler  # Lambda 関数のハンドラ名を指定
+      Runtime: python3.11  # Lambda 関数の実行ランタイムを指定
+      Role: !GetAtt LambdaExecutionRole.Arn  # Lambda 関数の実行ロールを参照
+      CodeUri: hello_world/  # Lambda 関数のコードが配置されているディレクトリを指定
+      Timeout: 30  # Lambda 関数のタイムアウトを指定
+      Events:
+        S3Event:
+          Type: S3  # S3 イベントトリガーを指定
+          Properties:
+            Bucket: !Ref MyBucket  # トリガーする S3 バケットを参照
+            Events: s3:ObjectCreated:*  # オブジェクトが作成されたときにトリガーするイベントを指定
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonTextractFullAccess

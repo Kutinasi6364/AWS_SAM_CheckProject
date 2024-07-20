@@ -1,3 +1,4 @@
+# S3 イベントを受け取り、アップロードされたファイルとバケット名を出力する
 import json
 
 # import requests

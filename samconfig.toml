@@ -17,9 +17,9 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
-stack_name = "stack-sam-sample"
-s3_prefix = "stack-sam-sample"
-region = "ap-northeast-1"
+stack_name = "S3LambdaTriggerStack"
+s3_prefix = "S3LambdaTriggerStack"
+region = "us-east-1"
 disable_rollback = true
 image_repositories = []
 

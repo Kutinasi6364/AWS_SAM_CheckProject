@@ -1,0 +1,20 @@
+# S3 PUT Event を検知して Lambda を実行する
+AWSTemplateFormatVersion: '2010-09-09'  # テンプレートのバージョンを指定
+Transform: 'AWS::Serverless-2016-10-31'  # AWS SAM を使用するための変換ルール
+
+Resources:
+  MyBucket:
+    Type: 'AWS::S3::Bucket'  # S3 バケットのリソースタイプを指定
+      
+  S3EventProcessorFunction:
+    Type: 'AWS::Serverless::Function'  # サーバーレスの Lambda 関数を指定
+    Properties:
+      Handler: app.lambda_handler  # Lambda 関数のハンドラ名を指定
+      Runtime: python3.11  # Lambda 関数の実行ランタイムを指定
+      CodeUri: hello_world/  # Lambda 関数のコードが配置されているディレクトリを指定
+      Events:
+        S3Event:
+          Type: S3  # S3 イベントトリガーを指定
+          Properties:
+            Bucket: !Ref MyBucket  # トリガーする S3 バケットを参照
+            Events: s3:ObjectCreated:*  # オブジェクトが作成されたときにトリガーするイベントを指定

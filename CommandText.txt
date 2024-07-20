@@ -55,7 +55,12 @@ END RequestId: cb70f32b-6d80-41de-9492-6515f3f4d843
 REPORT RequestId: cb70f32b-6d80-41de-9492-6515f3f4d843  Init Duration: 0.03 ms  Duration: 39.65 ms      Billed Duration: 40 ms  Memory Size: 128 MB  Max Memory Used: 128 MB
 
 # ビルド
-> sam build --use-container   
+> sam build --use-container
+# 新しいファイル(内容)でビルドする場合 事前に.aws-sam ﾌｫﾙﾀﾞを削除してターミナルを再起動しておく
+
 
 # put イベントに対して Lambda HelloWorldFunctionを実行(HelloWorldFunctionはtemplate.yaml の Resources に定義されている)
 > sam local invoke -e events/s3-local-event.json HelloWorldFunction
+
+# AWS にデプロイ
+> sam deploy --guided 
